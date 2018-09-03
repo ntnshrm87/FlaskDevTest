@@ -8,7 +8,7 @@
 # Note: This server perspective and the browser perspective is just reverse.
 
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
@@ -23,6 +23,11 @@ stores = [
         ]
     }
 ]
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 
 # POST /store data:{name}
