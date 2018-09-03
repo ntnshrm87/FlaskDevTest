@@ -1,4 +1,4 @@
-#!/root/Desktop/fdt/fdt/bin/python
+#!/root/fdt/fdt/bin/python
 
 import sys
 import getopt
