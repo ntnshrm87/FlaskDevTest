@@ -2,23 +2,33 @@
 #      using POSTMAN to validate the request.
 # Aim2: Creating all methods as designed with POSTMAN.
 # Aim3: Improving Error correction using filter functions.
+# Aim4: Apply authentication and logging with Flask JWT.
+#       Adding secret key and security.py
+
 from flask import Flask, request
 from flask_restful import Api, Resource
+from flask_jwt import JWT, jwt_required
+from security import authenticate, identity
+
 
 app = Flask(__name__)
+app.secret_key = "qwerty"
 api = Api(app)
+
+jwt = JWT(app, authenticate, identity) # creates a new end point /auth
 
 stores = []
 
 
 class Store(Resource):
+    @jwt_required()  # means authenticate before using this method
     def get(self, name):
         # for store in stores:
         #   if store['name'] == name:
         #       return store"""
         store = next(filter(lambda x: x["name"] == name, stores), None)
 
-        return {"store": None}, 200 if store else 404
+        return {"store": store}, 200 if store else 404
 
     def post(self, name):
         if next(filter(lambda x: x["name"] == name, stores), None) is not None:
@@ -29,15 +39,24 @@ class Store(Resource):
         return store, 201
 
     def put(self, name):
-        pass
+        data = request.get_json()
+        store = next(filter(lambda x: x["name"] == name, stores), None)
+        if store is None:
+            store = {"name": name, "noOfBooks": data['noOfBooks']}
+            stores.append(store)
+        else:
+            store.update(data)
+        return store
 
     def delete(self, name):
-        pass
+        global stores
+        stores = list(filter(lambda x: x["name"] != name, stores))
+        return {"message": "Item deleted"}
+
 
 class StoreList(Resource):
     def get(self):
         return {"stores": stores}
-
 
 
 api.add_resource(Store, '/store/<string:name>')
