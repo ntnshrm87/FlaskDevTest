@@ -6,7 +6,7 @@
 #       Adding secret key and security.py
 
 from flask import Flask, request
-from flask_restful import Api, Resource
+from flask_restful import Api, Resource, reqparse
 from flask_jwt import JWT, jwt_required
 from security import authenticate, identity
 
@@ -39,7 +39,15 @@ class Store(Resource):
         return store, 201
 
     def put(self, name):
-        data = request.get_json()
+        parser = reqparse.RequestParser()
+        parser.add_argument("noOfBooks",
+                            type=int,
+                            required=True,
+                            help="This field cannot be left blank!"
+                            )
+        data = parser.parse_args()
+
+        # data = request.get_json()
         store = next(filter(lambda x: x["name"] == name, stores), None)
         if store is None:
             store = {"name": name, "noOfBooks": data['noOfBooks']}
