@@ -4,6 +4,8 @@
 # Aim3: Improving Error correction using filter functions.
 # Aim4: Apply authentication and logging with Flask JWT.
 #       Adding secret key and security.py
+# Aim5: Adding reqparse from flask_restful and optimising
+#       final code.
 
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse
@@ -21,6 +23,13 @@ stores = []
 
 
 class Store(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument("noOfBooks",
+                        type=int,
+                        required=True,
+                        help="This field cannot be left blank!"
+                        )
+
     @jwt_required()  # means authenticate before using this method
     def get(self, name):
         # for store in stores:
@@ -33,19 +42,21 @@ class Store(Resource):
     def post(self, name):
         if next(filter(lambda x: x["name"] == name, stores), None) is not None:
             return {"message": "An item with name '{}' already exists.".format(name)}, 400
-        data = request.get_json()
+
+        data = Store.parser.parse_args()
+        # data = request.get_json()
         store = {"name": name, "noOfBooks": data['noOfBooks']}
         stores.append(store)
         return store, 201
 
     def put(self, name):
-        parser = reqparse.RequestParser()
-        parser.add_argument("noOfBooks",
-                            type=int,
-                            required=True,
-                            help="This field cannot be left blank!"
-                            )
-        data = parser.parse_args()
+        # parser = reqparse.RequestParser()
+        # parser.add_argument("noOfBooks",
+        #                     type=int,
+        #                     required=True,
+        #                     help="This field cannot be left blank!"
+        #                     )
+        data = Store.parser.parse_args()
 
         # data = request.get_json()
         store = next(filter(lambda x: x["name"] == name, stores), None)
